@@ -1,51 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Card from "../components/Card";
 import Filter from "../components/Filter";
-import axios from "axios";
-import { fetchProducts, setProducts } from "../stores/productSlice";
+import { selectProducts, setProducts } from "../stores/productSlice";
+import { useSearchParams } from "react-router-dom";
+import { requestAllProducts, searchProducts } from "../api";
 
 const Products = () => {
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
-
-  //For pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [productsPerPage] = useState(8); // Number of products per page
-  const products = useSelector(setProducts);
+  const products = useSelector(selectProducts);
+  const [searchParams] = useSearchParams();
+  const searchKeyword = searchParams.get("search");
 
   useEffect(() => {
-    const fetchAllProducts = async () => {
+    const fetchProducts = async () => {
       try {
-        const response = await axios.get("https://dummyjson.com/products");
-        dispatch(fetchProducts(response.data.products));
+        if (searchKeyword) {
+          const response = await searchProducts(searchKeyword);
+          dispatch(setProducts(response));
+        } else {
+          const response = await requestAllProducts();
+          dispatch(setProducts(response.data));
+        }
       } catch (error) {
         console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchAllProducts();
-  }, [dispatch]);
-
-  //Calculate the indices of the current page's products
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
-
-  //Calculate total pages
-  const totalPages = Math.ceil(products.length / productsPerPage);
-
-  //Handle page change
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
+    fetchProducts();
+  }, [dispatch, searchKeyword]);
 
   return (
     <div>
@@ -64,55 +47,21 @@ const Products = () => {
           <Filter />
         </div>
 
+        {/* Products Section */}
         <div className="md:w-3/4">
-          {loading ? (
-            <p className="text-center text-gray-500">Loading products...</p>
-          ) : currentProducts.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {currentProducts.map((product) => (
-                  <Card
-                    key={product.id}
-                    name={product.title}
-                    brand={product.brand}
-                    price={product.price}
-                    image={product.images[0]}
-                    id={product.id}
-                  />
-                ))}
-              </div>
-
-              {/* Pagination Section */}
-              <div className="flex justify-center items-center mt-8">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 mx-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
-                >
-                  Prev
-                </button>
-                {[...Array(totalPages).keys()].map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    onClick={() => handlePageChange(pageNumber + 1)}
-                    className={`px-4 py-2 mx-1 rounded-lg ${
-                      currentPage === pageNumber + 1
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    } transition`}
-                  >
-                    {pageNumber + 1}
-                  </button>
-                ))}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 mx-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-            </>
+          {products.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {products.map((product) => (
+                <Card
+                  key={product.id}
+                  name={product.name}
+                  brand={product.brand}
+                  price={product.price}
+                  image={product.image_urls[0]}
+                  id={product.id}
+                />
+              ))}
+            </div>
           ) : (
             <p className="text-center text-gray-500">No products available.</p>
           )}

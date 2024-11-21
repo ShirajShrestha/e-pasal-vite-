@@ -1,25 +1,36 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const isLoggedin = false; // Temporary state to check if user is logged in or not
+  const [searchData, setSearchData] = useState("");
 
   // Toggle function for profile dropdown
   const toggleProfileMenu = () => {
     setProfileMenuOpen(!profileMenuOpen);
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    navigate(`/products?search=${searchData}`);
+    setSearchData("");
+  };
+
   return (
     <nav className="bg-white font-primary shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo section*/}
-        <a href="/" className="text-2xl font-bold text-primary">
+        <Link to="/" className="text-2xl font-bold text-primary">
           E-Pasal
-        </a>
+        </Link>
         {/* Search Bar (Only visible on larger screens) */}
-        <form className="hidden lg:flex items-center w-1/2">
+        <form
+          className="hidden lg:flex items-center w-1/2"
+          onSubmit={handleSubmit}
+        >
           <label htmlFor="simple-search" className="sr-only">
             Search
           </label>
@@ -44,6 +55,8 @@ const Navbar = () => {
             <input
               type="text"
               id="simple-search"
+              value={searchData}
+              onChange={(e) => setSearchData(e.target.value)}
               className="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-accent focus:border-accent block w-full pl-10 p-2"
               placeholder="Search product name..."
               required
@@ -136,9 +149,14 @@ const Navbar = () => {
       >
         <div className="bg-gray-50 shadow-lg rounded-lg p-4">
           {/* Search Bar */}
-          <form className="flex items-center bg-white p-2 rounded-lg shadow-sm">
+          <form
+            className="flex items-center bg-white p-2 rounded-lg shadow-sm"
+            onSubmit={handleSubmit}
+          >
             <input
               type="text"
+              value={searchData}
+              onChange={(e) => setSearchData(e.target.value)}
               className="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-accent focus:border-accent block w-full p-2"
               placeholder="Search product..."
               required
