@@ -1,22 +1,21 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { signupUser } from "../stores/authActions";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signUp } from "../api";
+import Cookies from "js-cookie";
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     profilePicture: null,
-    firstName: "",
-    middleName: "",
-    lastName: "",
+    first_name: "",
+    middle_name: "",
+    last_name: "",
     address: "",
+    contact_phone: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    // confirmPassword: "",
   });
-
-  const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state) => state.auth);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -26,14 +25,23 @@ const SignUp = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match.");
-      return;
+
+    // Password validation
+    // if (formData.password !== formData.confirmPassword) {
+    //   alert("Passwords do not match.");
+    //   return;
+    // }
+
+    try {
+      const response = await signUp(formData);
+      const user_data = response.user;
+      Cookies.set("user_data", JSON.stringify(user_data), { expires: 7 });
+      navigate("/products");
+    } catch (error) {
+      console.error("Signup error:", error);
     }
-    console.log("Form data submitted:", formData);
-    dispatch(signupUser(formData));
   };
 
   return (
@@ -45,7 +53,6 @@ const SignUp = () => {
         <h2 className="text-2xl font-bold text-center mb-4 text-tertiary">
           Sign Up
         </h2>
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
         {/* Profile Picture */}
         <div className="mb-4">
@@ -68,8 +75,8 @@ const SignUp = () => {
             </label>
             <input
               type="text"
-              name="firstName"
-              value={formData.firstName}
+              name="first_name"
+              value={formData.first_name}
               onChange={handleChange}
               className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-accent"
               required
@@ -81,8 +88,8 @@ const SignUp = () => {
             </label>
             <input
               type="text"
-              name="middleName"
-              value={formData.middleName}
+              name="middle_name"
+              value={formData.middle_name}
               onChange={handleChange}
               className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-accent"
             />
@@ -93,8 +100,8 @@ const SignUp = () => {
             </label>
             <input
               type="text"
-              name="lastName"
-              value={formData.lastName}
+              name="last_name"
+              value={formData.last_name}
               onChange={handleChange}
               className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-accent"
               required
@@ -111,6 +118,21 @@ const SignUp = () => {
             type="text"
             name="address"
             value={formData.address}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-accent"
+            required
+          />
+        </div>
+
+        {/* Contact Phone */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Contact Phone
+          </label>
+          <input
+            type="tel"
+            name="contact_phone"
+            value={formData.contact_phone}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-accent"
             required
@@ -148,7 +170,7 @@ const SignUp = () => {
         </div>
 
         {/* Confirm Password */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Confirm Password
           </label>
@@ -160,14 +182,14 @@ const SignUp = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-accent"
             required
           />
-        </div>
+        </div> */}
 
         {/* Submit Button */}
         <button
           type="submit"
           className="w-full bg-accent text-white py-2 px-4 rounded hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-50"
         >
-          {isLoading ? "Signing Up..." : "Sign Up"}
+          Sign Up
         </button>
         {/* Login Link */}
         <p className="text-xs text-center mt-3">

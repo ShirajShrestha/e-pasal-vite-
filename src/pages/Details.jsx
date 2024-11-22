@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiHeart, FiSend } from "react-icons/fi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProductDetails,
@@ -15,12 +15,12 @@ const Details = () => {
   const [toggleReview, setToggleReview] = useState("description");
   const [quantity, setQuantity] = useState(1);
   // const [mainImage, setMainImage] = useState(null);
-  const navigate = useNavigate();
   let orders = JSON.parse(localStorage.getItem("orders")) || [];
 
   const addToCart = () => {
     const newProduct = {
       // image: details.images?.[0],
+      id: details.id,
       image: details.image,
       name: details.title,
       price: details.price,
@@ -29,7 +29,7 @@ const Details = () => {
     orders.push(newProduct);
     let orderString = JSON.stringify(orders);
     localStorage.setItem("orders", orderString);
-    navigate("/cart");
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   const increaseQuantity = () => {

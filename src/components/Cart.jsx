@@ -15,6 +15,7 @@ const Cart = () => {
       const updatedOrders = orders.filter((_, i) => i !== index);
       setOrders(updatedOrders); // Update state
       localStorage.setItem("orders", JSON.stringify(updatedOrders)); // Update localStorage
+      window.dispatchEvent(new Event("cartUpdated"));
     }
   };
   return (

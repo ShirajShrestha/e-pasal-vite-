@@ -1,15 +1,14 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../stores/authActions";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signIn } from "../api";
+import Cookies from "js-cookie";
 
 const SignIn = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state) => state.auth);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,10 +18,20 @@ const SignIn = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Login data submitted:", formData);
-    dispatch(loginUser(formData));
+
+    try {
+      const response = await signIn(formData);
+      const user_data = response.user;
+
+      Cookies.set("user_data", JSON.stringify(user_data), { expires: 7 });
+
+      navigate("/products");
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   return (
@@ -34,7 +43,6 @@ const SignIn = () => {
         <h2 className="text-2xl font-bold text-center mb-4 text-tertiary">
           Sign In
         </h2>
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
         {/* Email */}
         <div className="mb-4">
@@ -71,7 +79,7 @@ const SignIn = () => {
           type="submit"
           className="w-full bg-accent text-white py-2 px-4 rounded hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-50"
         >
-          {isLoading ? "Signing In..." : "Sign In"}
+          Sign In
         </button>
 
         <p className="text-xs text-center mt-3">

@@ -1,12 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { signOut } from "../api";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const isLoggedin = false; // Temporary state to check if user is logged in or not
   const [searchData, setSearchData] = useState("");
+  let userData = null;
+  const [cartCount, setcartCount] = useState(0);
+
+  const updateCartCount = () => {
+    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    setcartCount(orders.length);
+  };
+
+  const handleSignOut = () => {
+    signOut();
+    toggleProfileMenu();
+  };
+
+  useEffect(() => {
+    updateCartCount();
+
+    const handleCartUpdate = () => updateCartCount();
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+  }, []);
+
+  try {
+    const cookieData = Cookies.get("user_data");
+    if (cookieData) {
+      userData = JSON.parse(cookieData);
+    }
+  } catch (error) {
+    console.error("Failed to parse user_data cookie:", error);
+  }
 
   // Toggle function for profile dropdown
   const toggleProfileMenu = () => {
@@ -71,13 +102,18 @@ const Navbar = () => {
           </button>
         </form>
         {/* Icons and User Profile section (Only visible on larger screens) */}
-        {isLoggedin ? (
+        {userData ? (
           <div className="hidden lg:flex items-center space-x-4">
             <Link to="/products">
               <i className="fa-solid fa-bag-shopping text-xl cursor-pointer hover:text-accent"></i>
             </Link>
             <Link to="/cart">
-              <i className="fa-solid fa-cart-shopping text-xl cursor-pointer hover:text-accent"></i>
+              <div className="relative">
+                <i className="fa-solid fa-cart-shopping text-xl cursor-pointer hover:text-accent "></i>
+                <span className="absolute top-0 right-0 bg-blue-200 px-2 py-0.5 rounded-full -mt-4 -mr-3">
+                  {cartCount}
+                </span>
+              </div>
             </Link>
             <i className="fa-regular fa-heart text-xl cursor-pointer hover:text-accent"></i>
             <Link to="/contacts">
@@ -93,12 +129,14 @@ const Navbar = () => {
                   alt="user"
                   className="w-8 h-8 rounded-full object-cover"
                 />
-                <p className="text-gray-700 font-semibold">Aurora</p>
+                <p className="text-gray-700 font-semibold">
+                  {userData.first_name}
+                </p>
               </div>
 
               {/* Profile Dropdown */}
               {profileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg py-2 z-10">
+                <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg py-2 z-50 border border-black">
                   <a
                     href="/profile"
                     className="flex items-center px-4 py-2 hover:bg-gray-100"
@@ -106,8 +144,9 @@ const Navbar = () => {
                     <i className="fa-regular fa-user mr-2"></i> Profile
                   </a>
                   <a
-                    href="/logout"
+                    href="/"
                     className="flex items-center px-4 py-2 hover:bg-gray-100"
+                    onClick={handleSignOut}
                   >
                     <i className="fa-solid fa-arrow-right-from-bracket mr-2"></i>{" "}
                     Logout
@@ -170,7 +209,7 @@ const Navbar = () => {
           </form>
 
           {/* Links and Profile Options */}
-          {isLoggedin ? (
+          {userData ? (
             <div className="space-y-4 mt-4">
               <Link to="/products" className="flex items-center space-x-2">
                 <i className="fa-solid fa-bag-shopping text-xl text-gray-700"></i>
@@ -201,7 +240,9 @@ const Navbar = () => {
                     alt="user"
                     className="w-8 h-8 rounded-full object-cover"
                   />
-                  <p className="text-gray-700 font-semibold">Aurora</p>
+                  <p className="text-gray-700 font-semibold">
+                    {userData.first_name}{" "}
+                  </p>
                 </div>
                 {profileMenuOpen && (
                   <div className="absolute left-0 mt-2 w-40 bg-white shadow-lg rounded-lg py-2 z-10">

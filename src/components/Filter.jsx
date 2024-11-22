@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// eslint-disable-next-line react/prop-types
 const Filter = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false); // For category dropdown
