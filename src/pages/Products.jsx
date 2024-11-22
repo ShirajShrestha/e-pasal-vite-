@@ -1,16 +1,20 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import Card from "../components/Card";
 import Filter from "../components/Filter";
+import { useDispatch, useSelector } from "react-redux";
 import { selectProducts, setProducts } from "../stores/productSlice";
-import { useSearchParams } from "react-router-dom";
 import { requestAllProducts, searchProducts } from "../api";
+import { useSearchParams } from "react-router-dom";
 
 const Products = () => {
   const dispatch = useDispatch();
   const products = useSelector(selectProducts);
   const [searchParams] = useSearchParams();
   const searchKeyword = searchParams.get("search");
+  const [paginationInfo, setPaginationInfo] = useState({
+    next_page_url: null,
+    prev_page_url: null,
+  });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -21,6 +25,10 @@ const Products = () => {
         } else {
           const response = await requestAllProducts();
           dispatch(setProducts(response.data));
+          setPaginationInfo({
+            next_page_url: response.next_page_url,
+            prev_page_url: response.prev_page_url,
+          });
         }
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -30,8 +38,39 @@ const Products = () => {
     fetchProducts();
   }, [dispatch, searchKeyword]);
 
+  const handlePrevPage = async () => {
+    if (paginationInfo.prev_page_url) {
+      try {
+        const response = await requestAllProducts(paginationInfo.prev_page_url);
+        dispatch(setProducts(response.data));
+        setPaginationInfo({
+          next_page_url: response.next_page_url,
+          prev_page_url: response.prev_page_url,
+        });
+      } catch (error) {
+        console.error("Error fetching previous page:", error);
+      }
+    }
+  };
+
+  const handleNextPage = async () => {
+    if (paginationInfo.next_page_url) {
+      try {
+        const response = await requestAllProducts(paginationInfo.next_page_url);
+        dispatch(setProducts(response.data));
+        setPaginationInfo({
+          next_page_url: response.next_page_url,
+          prev_page_url: response.prev_page_url,
+        });
+      } catch (error) {
+        console.error("Error fetching next page:", error);
+      }
+    }
+  };
+
   return (
     <div>
+      {/* Banner Image */}
       <div className="lg:h-96">
         <img
           src="https://images.unsplash.com/photo-1445384763658-0400939829cd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -54,10 +93,10 @@ const Products = () => {
               {products.map((product) => (
                 <Card
                   key={product.id}
-                  name={product.name}
+                  name={product.title}
                   brand={product.brand}
                   price={product.price}
-                  image={product.image_urls[0]}
+                  image={product.image}
                   id={product.id}
                 />
               ))}
@@ -66,6 +105,23 @@ const Products = () => {
             <p className="text-center text-gray-500">No products available.</p>
           )}
         </div>
+      </div>
+      {/* Prev and Next Buttons */}
+      <div className="flex justify-center align-center my-8 gap-4">
+        <button
+          className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
+          onClick={handlePrevPage}
+          disabled={!paginationInfo.prev_page_url}
+        >
+          Prev
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
+          onClick={handleNextPage}
+          disabled={!paginationInfo.next_page_url}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

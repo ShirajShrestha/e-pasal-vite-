@@ -1,8 +1,9 @@
 import axios from "axios";
 const api = import.meta.env.VITE_API_BASE_URL;
 
-export const requestAllProducts = async () => {
-  const response = await axios.get(`${api}/products`);
+export const requestAllProducts = async (url = null) => {
+  const endpoint = url || `${api}/products`;
+  const response = await axios.get(endpoint);
   return response.data;
 };
 
