@@ -1,10 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
+import Cookies from "js-cookie";
+import { postOrder } from "../api";
 
 const Cart = () => {
   let retString = localStorage.getItem("orders");
   let initialOrders = JSON.parse(retString) || [];
   const [orders, setOrders] = useState(initialOrders);
+  const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  let simplifiedOrders = initialOrders.map((order) => ({
+    product_id: order.id,
+    quantity: order.quantity,
+  }));
+
+  useEffect(() => {
+    const userData = JSON.parse(Cookies.get("user_data"));
+    setUserId(userData.id);
+  }, [userId]);
+
+  const handleOrder = async () => {
+    try {
+      setLoading(true);
+      const response = await postOrder(simplifiedOrders, userId);
+      console.log("response after ordering", response);
+
+      if (response.status == 201) {
+        localStorage.setItem("orders", JSON.stringify([]));
+        alert("Your order has been sent");
+        window.location.reload(); // Refresh the page
+      } else {
+        alert("Failed to place the order. Please try again.");
+        console.error("Order error:", response.status, response.statusText);
+      }
+    } catch (error) {
+      alert("An error occurred while placing the order. Please try again.");
+      console.error("Error during order handling:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = (index) => {
     const confirmDelete = window.confirm(
@@ -45,7 +81,7 @@ const Cart = () => {
                 </p>
               </div>
               <div className="flex flex-col items-center mx-4 w-[25%]  ">
-                <p className="text-secondary">Rs 300</p>
+                <p className="text-secondary">${order.price}</p>
                 <button className="pt-4" onClick={() => handleDelete(index)}>
                   <FiTrash2 className="hover:text-red-400" />
                 </button>
@@ -64,8 +100,11 @@ const Cart = () => {
 
       {orders && orders.length > 0 && (
         <div className="flex items-center">
-          <button className="ml-4 px-4 py-2 text-base md:text-md bg-accent text-gray-800 rounded-lg hover:bg-primary transition duration-200 my-3 ">
-            Order
+          <button
+            className="ml-4 px-4 py-2 text-base md:text-md bg-accent text-gray-800 rounded-lg hover:bg-primary transition duration-200 my-3 "
+            onClick={handleOrder}
+          >
+            {loading ? "Ordering" : " Send Order"}
           </button>
         </div>
       )}

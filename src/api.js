@@ -1,6 +1,6 @@
 import axios from "axios";
-const api = import.meta.env.VITE_API_BASE_URL;
 import Cookies from "js-cookie";
+const api = import.meta.env.VITE_API_BASE_URL;
 
 export const requestAllProducts = async (url = null) => {
   const endpoint = url || `${api}/products`;
@@ -44,4 +44,16 @@ export const signIn = async (params) => {
 
 export const signOut = async () => {
   Cookies.remove("user_data");
+};
+
+export const postOrder = async (orderData, userId) => {
+  const response = await axios.post(`${api}/users/${userId}/orders`, {
+    order_products: orderData,
+  });
+  return response;
+};
+
+export const fetchAllOrders = async (userId) => {
+  const response = await axios.get(`${api}/users/${userId}/orders`);
+  return response.data;
 };
