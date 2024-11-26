@@ -57,3 +57,13 @@ export const fetchAllOrders = async (userId) => {
   const response = await axios.get(`${api}/users/${userId}/orders`);
   return response.data;
 };
+
+export const fetchCategories = async () => {
+  const response = await axios.get(`${api}/product_categories`);
+  return response;
+};
+
+export const filterByCategories = async (id) => {
+  const response = await axios.get(`${api}/product_categories/${id}`);
+  return response;
+};

@@ -1,22 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchCategories } from "../api";
 
 const Filter = () => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false); // For category dropdown
-  const [localSearchTerm, setLocalSearchTerm] = useState(""); // Local state for search term input
-
-  const brands = ["Beauty", "Fragrances", "Furniture", "Groceries", "Laptops"]; // Example categories
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchData, setsearchData] = useState("");
+  const [category, setCategory] = useState([]);
 
   const handleSearchChange = (e) => {
-    setLocalSearchTerm(e.target.value);
+    setsearchData(e.target.value);
   };
 
   const handleSumbit = (e) => {
     e.preventDefault();
-    navigate(`/products?search=${localSearchTerm}`);
-    setLocalSearchTerm("");
+    navigate(`/products?search=${searchData}`);
+    setsearchData("");
   };
+
+  const getCategoryDetail = async (id) => {
+    navigate(`/products?searchId=${id}`);
+  };
+
+  useEffect(() => {
+    const getCategories = async () => {
+      const response = await fetchCategories();
+      setCategory(response.data);
+    };
+    getCategories();
+  }, []);
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg space-y-6">
@@ -33,7 +45,7 @@ const Filter = () => {
             type="text"
             placeholder="Search products"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-700"
-            value={localSearchTerm}
+            value={searchData}
             onChange={handleSearchChange}
           />
         </div>
@@ -51,18 +63,15 @@ const Filter = () => {
         {isOpen && (
           <div className="mt-3 bg-white border border-gray-200 rounded-lg shadow-md p-4">
             <ul className="space-y-2">
-              {brands
-                .filter((brand) =>
-                  brand.toLowerCase().includes(localSearchTerm.toLowerCase())
-                )
-                .map((brand, index) => (
-                  <li
-                    key={index}
-                    className="cursor-pointer text-gray-700 hover:text-blue-500 hover:underline"
-                  >
-                    {brand}
-                  </li>
-                ))}
+              {category.slice(0, 15).map((item, index) => (
+                <li
+                  key={index}
+                  className="cursor-pointer text-gray-700 hover:text-blue-500 hover:underline"
+                  onClick={() => getCategoryDetail(item.id)}
+                >
+                  {item.name}
+                </li>
+              ))}
             </ul>
           </div>
         )}

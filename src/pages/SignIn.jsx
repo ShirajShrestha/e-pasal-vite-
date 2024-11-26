@@ -45,7 +45,7 @@ const SignIn = () => {
     <div className="flex justify-center bg-gray-100">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg lg:my-16 xl:my-32"
+        className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg my-8 lg:my-16 xl:my-32"
       >
         <h2 className="text-2xl font-bold text-center mb-4 text-tertiary">
           Sign In

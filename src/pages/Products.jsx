@@ -3,7 +3,7 @@ import Card from "../components/Card";
 import Filter from "../components/Filter";
 import { useDispatch, useSelector } from "react-redux";
 import { selectProducts, setProducts } from "../stores/productSlice";
-import { requestAllProducts, searchProducts } from "../api";
+import { filterByCategories, requestAllProducts, searchProducts } from "../api";
 import { useSearchParams } from "react-router-dom";
 
 const Products = () => {
@@ -11,6 +11,7 @@ const Products = () => {
   const products = useSelector(selectProducts);
   const [searchParams] = useSearchParams();
   const searchKeyword = searchParams.get("search");
+  const filterId = searchParams.get("searchId");
   const [paginationInfo, setPaginationInfo] = useState({
     next_page_url: null,
     prev_page_url: null,
@@ -24,6 +25,9 @@ const Products = () => {
         if (searchKeyword) {
           const response = await searchProducts(searchKeyword);
           dispatch(setProducts(response));
+        } else if (filterId) {
+          const response = await filterByCategories(filterId);
+          dispatch(setProducts(response.data.data.products));
         } else {
           const response = await requestAllProducts();
           dispatch(setProducts(response.data));
@@ -40,7 +44,7 @@ const Products = () => {
     };
 
     fetchProducts();
-  }, [dispatch, searchKeyword]);
+  }, [dispatch, searchKeyword, filterId]);
 
   const handlePrevPage = async () => {
     if (paginationInfo.prev_page_url) {

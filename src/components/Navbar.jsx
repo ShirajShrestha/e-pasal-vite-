@@ -303,12 +303,14 @@ const Navbar = () => {
               <Link
                 to="/signup"
                 className="block text-center bg-accent text-white px-3 py-2 rounded hover:bg-primary"
+                onClick={() => setMenuOpen(!menuOpen)}
               >
                 Sign Up
               </Link>
               <Link
                 to="/signin"
                 className="block text-center bg-accent text-white px-3 py-2 rounded hover:bg-primary"
+                onClick={() => setMenuOpen(!menuOpen)}
               >
                 Sign In
               </Link>
