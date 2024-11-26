@@ -9,6 +9,8 @@ const SignIn = () => {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,29 +22,38 @@ const SignIn = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login data submitted:", formData);
 
     try {
+      setLoading(true);
       const response = await signIn(formData);
       const user_data = response.user;
-
-      Cookies.set("user_data", JSON.stringify(user_data), { expires: 7 });
-
-      navigate("/products");
+      if (response.message == "User Login Successful") {
+        Cookies.set("user_data", JSON.stringify(user_data), { expires: 7 });
+        navigate("/products");
+      } else {
+        setError("Invalid email or password. Please try again.");
+      }
     } catch (error) {
       console.error("Login failed:", error);
+      setError("An error occurred while signing in. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center mt-2 bg-gray-100">
+    <div className="flex justify-center bg-gray-100">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg my-8"
+        className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg lg:my-16 xl:my-32"
       >
         <h2 className="text-2xl font-bold text-center mb-4 text-tertiary">
           Sign In
         </h2>
+
+        {error && (
+          <p className="text-sm text-red-500 text-center mb-4">{error}</p>
+        )}
 
         {/* Email */}
         <div className="mb-4">
@@ -79,7 +90,11 @@ const SignIn = () => {
           type="submit"
           className="w-full bg-accent text-white py-2 px-4 rounded hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-50"
         >
-          Sign In
+          {loading ? (
+            <p className="cursor-not-allowed">Signing In</p>
+          ) : (
+            <p>Sign In</p>
+          )}
         </button>
 
         <p className="text-xs text-center mt-3">

@@ -15,10 +15,12 @@ const Products = () => {
     next_page_url: null,
     prev_page_url: null,
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         if (searchKeyword) {
           const response = await searchProducts(searchKeyword);
           dispatch(setProducts(response));
@@ -32,6 +34,8 @@ const Products = () => {
         }
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -56,6 +60,7 @@ const Products = () => {
   const handleNextPage = async () => {
     if (paginationInfo.next_page_url) {
       try {
+        setLoading(true);
         const response = await requestAllProducts(paginationInfo.next_page_url);
         dispatch(setProducts(response.data));
         setPaginationInfo({
@@ -64,6 +69,8 @@ const Products = () => {
         });
       } catch (error) {
         console.error("Error fetching next page:", error);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -88,7 +95,11 @@ const Products = () => {
 
         {/* Products Section */}
         <div className="md:w-3/4">
-          {products.length > 0 ? (
+          {loading ? (
+            <p className="text-center font-bold text-secondary min-h-[50vh]">
+              Loading...
+            </p>
+          ) : products.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product) => (
                 <Card
@@ -102,7 +113,9 @@ const Products = () => {
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-500">No products available.</p>
+            <p className="text-center font-bold text-secondary min-h-[50vh]">
+              No products available
+            </p>
           )}
         </div>
       </div>
