@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { FiTrash2 } from "react-icons/fi";
-import Cookies from "js-cookie";
 import { postOrder } from "../api";
+import { getMyToken } from "../utils";
 
 const Cart = () => {
-  let retString = localStorage.getItem("orders");
-  let initialOrders = JSON.parse(retString) || [];
-  const [orders, setOrders] = useState(initialOrders);
-  const [userId, setUserId] = useState(null);
+  const token = getMyToken();
+  // const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState([]);
+  let retString = localStorage.getItem(`orders_${token}`);
+  let initialOrders = JSON.parse(retString) || [];
 
   let simplifiedOrders = initialOrders.map((order) => ({
     product_id: order.id,
@@ -16,18 +16,20 @@ const Cart = () => {
   }));
 
   useEffect(() => {
-    const userData = JSON.parse(Cookies.get("user_data"));
-    setUserId(userData.id);
-  }, [userId]);
+    if (token) {
+      const retString = localStorage.getItem(`orders_${token}`);
+      const initialOrders = JSON.parse(retString) || [];
+      setOrders(initialOrders);
+    }
+  }, [token]);
 
   const handleOrder = async () => {
     try {
       setLoading(true);
-      const response = await postOrder(simplifiedOrders, userId);
-      console.log("response after ordering", response);
+      const response = await postOrder(simplifiedOrders);
 
       if (response.status == 201) {
-        localStorage.setItem("orders", JSON.stringify([]));
+        localStorage.setItem(`orders_${token}`, JSON.stringify([]));
         alert("Your order has been sent");
         window.location.reload(); // Refresh the page
       } else {
@@ -50,7 +52,7 @@ const Cart = () => {
       // Filter out the item to be deleted
       const updatedOrders = orders.filter((_, i) => i !== index);
       setOrders(updatedOrders); // Update state
-      localStorage.setItem("orders", JSON.stringify(updatedOrders)); // Update localStorage
+      localStorage.setItem(`orders_${token}`, JSON.stringify(updatedOrders)); // Update localStorage
       window.dispatchEvent(new Event("cartUpdated"));
     }
   };
@@ -83,7 +85,7 @@ const Cart = () => {
               <div className="flex flex-col items-center mx-4 w-[25%]  ">
                 <p className="text-secondary">${order.price}</p>
                 <button className="pt-4" onClick={() => handleDelete(index)}>
-                  <FiTrash2 className="hover:text-red-400" />
+                  <i className="fa-solid fa-trash-can hover:text-red-400"></i>
                 </button>
               </div>
               <div className="w-[25%] flex justify-center">

@@ -1,27 +1,19 @@
 import { useEffect, useState } from "react";
 import { fetchAllOrders } from "../api";
-import Cookies from "js-cookie";
+import { getMyToken } from "../utils";
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState(null);
 
-  useEffect(() => {
-    const userData = JSON.parse(Cookies.get("user_data") || "{}");
-    if (userData?.id) {
-      setUserId(userData.id);
-    } else {
-      console.error("User ID not found in cookies.");
-    }
-  }, []);
+  const token = getMyToken();
 
   useEffect(() => {
     const loadOrders = async () => {
       try {
         setLoading(true);
-        if (!userId) return;
-        const fetchedOrders = await fetchAllOrders(userId);
+        if (!token) return;
+        const fetchedOrders = await fetchAllOrders();
         setOrders(fetchedOrders?.orders || []);
       } catch (err) {
         console.error("Error fetching orders:", err);
@@ -31,7 +23,7 @@ const Order = () => {
     };
 
     loadOrders();
-  }, [userId]);
+  }, [token]);
 
   return (
     <div

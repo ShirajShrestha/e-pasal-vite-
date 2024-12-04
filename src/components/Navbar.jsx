@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { signOut } from "../api";
+import { getMyToken, signOut } from "../utils";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -11,9 +11,21 @@ const Navbar = () => {
   let userData = null;
   const [cartCount, setcartCount] = useState(0);
 
+  const token = getMyToken();
+
   const updateCartCount = () => {
-    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-    setcartCount(orders.length);
+    try {
+      if (!token) {
+        console.warn("Token is undefined or empty. Cannot fetch cart count.");
+        return;
+      }
+      const orders = JSON.parse(
+        localStorage.getItem(`orders_${token}`) || "[]"
+      );
+      setcartCount(orders.length);
+    } catch (error) {
+      console.error("Failed to update cart count:", error);
+    }
   };
 
   const handleSignOut = () => {
@@ -279,23 +291,24 @@ const Navbar = () => {
                     {userData.first_name}{" "}
                   </p>
                 </div>
-                {profileMenuOpen && (
+                <Link
+                  className="flex items-center px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleSignOut()}
+                >
+                  <i className="fa-solid fa-arrow-right-from-bracket mr-2"></i>
+                  Logout
+                </Link>
+                {/* {profileMenuOpen && (
                   <div className="absolute left-0 mt-2 w-40 bg-white shadow-lg rounded-lg py-2 z-10">
-                    {/* <Link
-                      to="/profile"
-                      className="flex items-center px-4 py-2 hover:bg-gray-100"
-                    >
-                      <i className="fa-regular fa-user mr-2"></i> Profile
-                    </Link> */}
                     <Link
-                      to="/logout"
                       className="flex items-center px-4 py-2 hover:bg-gray-100"
+                      onClick={() => handleSignOut()}
                     >
-                      <i className="fa-solid fa-arrow-right-from-bracket mr-2"></i>{" "}
+                      <i className="fa-solid fa-arrow-right-from-bracket mr-2"></i>
                       Logout
                     </Link>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           ) : (

@@ -1,5 +1,5 @@
 import axios from "axios";
-import Cookies from "js-cookie";
+import { getMyToken } from "./utils";
 const api = import.meta.env.VITE_API_BASE_URL;
 
 export const requestAllProducts = async (url = null) => {
@@ -19,42 +19,38 @@ export const searchProducts = async (params) => {
 };
 
 export const signUp = async (params) => {
-  const response = await fetch(`${api}/users`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
-  const data = await response.json();
-  return data;
-};
-
-export const signIn = async (params) => {
-  const response = await fetch(`${api}/users/sign_in`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
-  const data = await response.json();
-  return data;
-};
-
-export const signOut = async () => {
-  Cookies.remove("user_data");
-};
-
-export const postOrder = async (orderData, userId) => {
-  const response = await axios.post(`${api}/users/${userId}/orders`, {
-    order_products: orderData,
-  });
+  const response = await axios.post(`${api}/users`, params);
   return response;
 };
 
-export const fetchAllOrders = async (userId) => {
-  const response = await axios.get(`${api}/users/${userId}/orders`);
+export const signIn = async (params) => {
+  const response = await axios.post(`${api}/users/sign_in`, params);
+  return response;
+};
+
+export const postOrder = async (orderData) => {
+  const token = getMyToken();
+  const response = await axios.post(
+    `${api}/orders`,
+    {
+      order_products: orderData,
+    },
+    {
+      headers: {
+        Authorization: token,
+      },
+    }
+  );
+  return response;
+};
+
+export const fetchAllOrders = async () => {
+  const token = getMyToken();
+  const response = await axios.get(`${api}/orders`, {
+    headers: {
+      Authorization: token,
+    },
+  });
   return response.data;
 };
 
@@ -66,4 +62,12 @@ export const fetchCategories = async () => {
 export const filterByCategories = async (id) => {
   const response = await axios.get(`${api}/product_categories/${id}`);
   return response;
+};
+
+export const postReview = async (id, comment, userId) => {
+  const response = await axios.post(`${api}/products/${id}/comments`, {
+    content: comment,
+    user_id: userId,
+  });
+  return response.data;
 };

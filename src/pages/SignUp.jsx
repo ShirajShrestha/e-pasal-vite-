@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signUp } from "../api";
-import Cookies from "js-cookie";
+import { setCookieData } from "../utils";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -38,9 +38,11 @@ const SignUp = () => {
     try {
       setLoading(true);
       const response = await signUp(formData);
-      const user_data = response.user;
-      Cookies.set("user_data", JSON.stringify(user_data), { expires: 7 });
-      navigate("/products");
+      const { token, user } = response.data;
+      if (response.status === 201) {
+        setCookieData(token, user);
+        navigate("/products");
+      }
     } catch (error) {
       console.error("Signup error:", error);
     } finally {
