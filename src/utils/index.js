@@ -20,3 +20,15 @@ export const signOut = async () => {
   Cookies.remove("user_data");
   Cookies.remove("user_token");
 };
+
+export const getUserData = () => {
+  try {
+    const data = Cookies.get("user_data");
+    if (data) {
+      const userData = JSON.parse(data);
+      return userData;
+    }
+  } catch (error) {
+    console.error("Failed to parse user data ", error);
+  }
+};

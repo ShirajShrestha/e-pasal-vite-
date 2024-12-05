@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { getMyToken, signOut } from "../utils";
+import { getMyToken, getUserData, signOut } from "../utils";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -42,14 +41,7 @@ const Navbar = () => {
     return () => window.removeEventListener("cartUpdated", handleCartUpdate);
   }, []);
 
-  try {
-    const cookieData = Cookies.get("user_data");
-    if (cookieData) {
-      userData = JSON.parse(cookieData);
-    }
-  } catch (error) {
-    console.error("Failed to parse user_data cookie:", error);
-  }
+  userData = getUserData();
 
   // Toggle function for profile dropdown
   const toggleProfileMenu = () => {

@@ -166,30 +166,37 @@ const Details = () => {
                 <p className="text-gray-500 mb-4">
                   Stock: <span className="text-black">{details.stock} </span>{" "}
                 </p>
-                <div className="mb-4">
-                  <p className="font-bold mb-1">Qty</p>
-                  <div>
-                    <span
-                      className="border border-black px-2 py-1 rounded cursor-pointer"
-                      onClick={decreaseQuantity}
+                {details.stock === 0 ? (
+                  <p className="text-red-600">Out of stock!</p>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <p className="font-bold mb-1">Qty</p>
+                      <div>
+                        <button
+                          className="border border-black px-2 py-1 rounded cursor-pointer"
+                          onClick={decreaseQuantity}
+                        >
+                          -
+                        </button>
+                        <span className="m-1">{quantity}</span>
+                        <button
+                          className="border border-black px-2 py-1 rounded cursor-pointer disabled:cursor-not-allowed"
+                          onClick={increaseQuantity}
+                          disabled={quantity == details.stock}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      className="bg-accent w-full my-2 rounded-md p-2 text-white font-normal"
+                      onClick={() => addToCart()}
                     >
-                      -
-                    </span>
-                    <span className="m-1">{quantity}</span>
-                    <span
-                      className="border border-black px-2 py-1 rounded cursor-pointer"
-                      onClick={increaseQuantity}
-                    >
-                      +
-                    </span>
-                  </div>
-                </div>
-                <button
-                  className="bg-accent w-full my-2 rounded-md p-2 text-white font-normal"
-                  onClick={() => addToCart()}
-                >
-                  Add to cart
-                </button>
+                      Add to cart
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
