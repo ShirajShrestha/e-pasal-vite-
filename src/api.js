@@ -64,10 +64,19 @@ export const filterByCategories = async (id) => {
   return response;
 };
 
-export const postReview = async (id, comment, userId) => {
-  const response = await axios.post(`${api}/products/${id}/comments`, {
-    content: comment,
-    user_id: userId,
-  });
+export const postReview = async (id, comment) => {
+  const token = getMyToken();
+  const response = await axios.post(
+    `${api}/products/${id}/comments`,
+    {
+      content: comment,
+      // user_id: userId,
+    },
+    {
+      headers: {
+        Authorization: token,
+      },
+    }
+  );
   return response.data;
 };

@@ -33,7 +33,16 @@ const Details = () => {
       price: details.price,
       quantity: quantity,
     };
-    orders.push(newProduct);
+
+    let checkIfExist = orders.find((item) => item.id === newProduct.id);
+    if (checkIfExist) {
+      checkIfExist.quantity += newProduct.quantity;
+      alert("Product updated in cart");
+    } else {
+      orders.push(newProduct);
+      alert("Product added in cart");
+    }
+
     let orderString = JSON.stringify(orders);
     localStorage.setItem(`orders_${myToken}`, orderString);
     window.dispatchEvent(new Event("cartUpdated"));
