@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { postOrder } from "../api";
-import { getMyToken } from "../utils";
+import { getUserData } from "../utils";
 
 const Cart = () => {
-  const token = getMyToken();
-  // const [token, setToken] = useState(null);
+  const { id } = getUserData();
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
-  let retString = localStorage.getItem(`orders_${token}`);
+  let retString = localStorage.getItem(`orders_${id}`);
   let initialOrders = JSON.parse(retString) || [];
 
   let simplifiedOrders = initialOrders.map((order) => ({
@@ -16,12 +15,12 @@ const Cart = () => {
   }));
 
   useEffect(() => {
-    if (token) {
-      const retString = localStorage.getItem(`orders_${token}`);
+    if (id) {
+      const retString = localStorage.getItem(`orders_${id}`);
       const initialOrders = JSON.parse(retString) || [];
       setOrders(initialOrders);
     }
-  }, [token]);
+  }, [id]);
 
   const handleOrder = async () => {
     try {
@@ -29,7 +28,7 @@ const Cart = () => {
       const response = await postOrder(simplifiedOrders);
 
       if (response.status == 201) {
-        localStorage.setItem(`orders_${token}`, JSON.stringify([]));
+        localStorage.setItem(`orders_${id}`, JSON.stringify([]));
         alert("Your order has been sent");
         window.location.reload(); // Refresh the page
       } else {
@@ -52,7 +51,7 @@ const Cart = () => {
       // Filter out the item to be deleted
       const updatedOrders = orders.filter((_, i) => i !== index);
       setOrders(updatedOrders); // Update state
-      localStorage.setItem(`orders_${token}`, JSON.stringify(updatedOrders)); // Update localStorage
+      localStorage.setItem(`orders_${id}`, JSON.stringify(updatedOrders)); // Update localStorage
       window.dispatchEvent(new Event("cartUpdated"));
     }
   };

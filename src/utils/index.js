@@ -24,11 +24,14 @@ export const signOut = async () => {
 export const getUserData = () => {
   try {
     const data = Cookies.get("user_data");
-    if (data) {
-      const userData = JSON.parse(data);
-      return userData;
+    if (!data) {
+      // console.warn("User id not found");
+      return null;
     }
+    const userData = JSON.parse(data);
+    return userData;
   } catch (error) {
     console.error("Failed to parse user data ", error);
+    return null;
   }
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getMyToken, getUserData, signOut } from "../utils";
+import { getUserData, signOut } from "../utils";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -10,18 +10,15 @@ const Navbar = () => {
   let userData = null;
   const [cartCount, setcartCount] = useState(0);
 
-  const token = getMyToken();
-
   const updateCartCount = () => {
     try {
-      if (!token) {
-        console.warn("Token is undefined or empty. Cannot fetch cart count.");
+      const userData = getUserData();
+      if (!userData || !userData.id) {
         return;
       }
-      const orders = JSON.parse(
-        localStorage.getItem(`orders_${token}`) || "[]"
-      );
-      setcartCount(orders.length);
+      const id = userData.id;
+      const orders = JSON.parse(localStorage.getItem(`orders_${id}`) || []);
+      setcartCount(Array.isArray(orders) ? orders.length : 0);
     } catch (error) {
       console.error("Failed to update cart count:", error);
     }

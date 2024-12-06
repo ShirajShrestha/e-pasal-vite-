@@ -1,30 +1,42 @@
 import { useEffect, useState } from "react";
 import { FiSend } from "react-icons/fi";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProductDetails,
   setProductDetails,
 } from "../stores/productDetailsSlice";
 import { postReview, requestSingleProduct } from "../api";
-import { getMyToken } from "../utils";
-import Cookies from "js-cookie"; // Remove this later
+import { getMyToken, getUserData } from "../utils";
 
 const Details = () => {
   let { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const details = useSelector(setProductDetails);
+
+  // const [mainImage, setMainImage] = useState(null);
   const [toggleReview, setToggleReview] = useState("description");
   const [quantity, setQuantity] = useState(1);
-  // const [mainImage, setMainImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
 
+  const userData = getUserData();
+  const user_id = userData.id || null;
+
   const myToken = getMyToken();
-  let orders = JSON.parse(localStorage.getItem(`orders_${myToken}`)) || [];
+
+  let orders = user_id
+    ? JSON.parse(localStorage.getItem(`orders_${user_id}`)) || []
+    : [];
 
   const addToCart = () => {
+    if (!user_id) {
+      alert("Please log in to add products to your cart.");
+      navigate("/signin");
+    }
+
     const newProduct = {
       // image: details.images?.[0],
       id: details.id,
@@ -44,7 +56,7 @@ const Details = () => {
     }
 
     let orderString = JSON.stringify(orders);
-    localStorage.setItem(`orders_${myToken}`, orderString);
+    localStorage.setItem(`orders_${user_id}`, orderString);
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
@@ -66,13 +78,18 @@ const Details = () => {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-    if (!comment.trim()) return;
+    if (!comment.trim()) {
+      alert("Comment cannot be empty.");
+      return;
+    }
 
-    const userData = JSON.parse(Cookies.get("user_data"));
-    const userId = userData.id;
+    if (!myToken) {
+      alert("You must be logged in to submit a comment.");
+      return;
+    }
 
     try {
-      const response = await postReview(id, comment, userId);
+      const response = await postReview(id, comment);
       if (response.status === "created") {
         const newComment = {
           content: comment,
@@ -91,7 +108,6 @@ const Details = () => {
     }
   };
 
-  // const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
@@ -100,6 +116,7 @@ const Details = () => {
           const response = await requestSingleProduct(id);
           dispatch(fetchProductDetails(response));
           // setMainImage(response.images?.[0]);
+          setComments(response.comments);
         }
       } catch (error) {
         console.error("Error fetching product details:", error);
