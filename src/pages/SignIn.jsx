@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signIn } from "../api";
-import { setCookieData } from "../utils";
+import { getUserData, setCookieData } from "../utils";
+import { useDispatch } from "react-redux";
+import { resetCartCount, setCartCount } from "../stores/cartSlice";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -11,6 +13,8 @@ const SignIn = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,6 +33,16 @@ const SignIn = () => {
       const { token, user } = response.data;
       if (response.status === 200) {
         setCookieData(token, user);
+
+        const userData = getUserData();
+        if (userData?.id) {
+          const orders = JSON.parse(
+            localStorage.getItem(`orders_${userData.id}`) || "[]"
+          );
+          dispatch(setCartCount(orders.length));
+        } else {
+          dispatch(resetCartCount());
+        }
         navigate("/products");
       } else {
         setError("Invalid email or password. Please try again.");

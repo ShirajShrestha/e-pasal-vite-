@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getUserData, signOut } from "../utils";
+import { useSelector, useDispatch } from "react-redux";
+import { resetCartCount, setCartCount } from "../stores/cartSlice";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -8,34 +10,49 @@ const Navbar = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchData, setSearchData] = useState("");
   let userData = null;
-  const [cartCount, setcartCount] = useState(0);
+  // const [cartCount, setcartCount] = useState(0);
+  const cartCount = useSelector((state) => state.cart.cartCount);
+  const dispatch = useDispatch();
+
+  // const updateCartCount = () => {
+  //   try {
+  //     const userData = getUserData();
+  //     if (!userData || !userData.id) {
+  //       return;
+  //     }
+  //     const id = userData.id;
+  //     const orders = JSON.parse(localStorage.getItem(`orders_${id}`) || []);
+  //     setcartCount(Array.isArray(orders) ? orders.length : 0);
+  //   } catch (error) {
+  //     console.error("Failed to update cart count:", error);
+  //   }
+  // };
 
   const updateCartCount = () => {
-    try {
-      const userData = getUserData();
-      if (!userData || !userData.id) {
-        return;
-      }
-      const id = userData.id;
-      const orders = JSON.parse(localStorage.getItem(`orders_${id}`) || []);
-      setcartCount(Array.isArray(orders) ? orders.length : 0);
-    } catch (error) {
-      console.error("Failed to update cart count:", error);
+    const userData = getUserData();
+    if (userData?.id) {
+      const orders = JSON.parse(
+        localStorage.getItem(`orders_${userData.id}`) || "[]"
+      );
+      dispatch(setCartCount(orders.length));
+    } else {
+      dispatch(resetCartCount());
     }
   };
 
   const handleSignOut = () => {
     signOut();
+    dispatch(resetCartCount());
     toggleProfileMenu();
   };
 
   useEffect(() => {
     updateCartCount();
 
-    const handleCartUpdate = () => updateCartCount();
-    window.addEventListener("cartUpdated", handleCartUpdate);
+    // const handleCartUpdate = () => updateCartCount();
+    // window.addEventListener("cartUpdated", handleCartUpdate);
 
-    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+    // return () => window.removeEventListener("cartUpdated", handleCartUpdate);
   }, []);
 
   userData = getUserData();

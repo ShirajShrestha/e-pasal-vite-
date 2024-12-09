@@ -8,6 +8,7 @@ import {
 } from "../stores/productDetailsSlice";
 import { postReview, requestSingleProduct } from "../api";
 import { getMyToken, getUserData } from "../utils";
+import { setCartCount } from "../stores/cartSlice";
 
 const Details = () => {
   let { id } = useParams();
@@ -23,7 +24,7 @@ const Details = () => {
   const [comments, setComments] = useState([]);
 
   const userData = getUserData();
-  const user_id = userData.id || null;
+  const user_id = userData?.id || null;
 
   const myToken = getMyToken();
 
@@ -53,6 +54,7 @@ const Details = () => {
     } else {
       orders.push(newProduct);
       alert("Product added in cart");
+      dispatch(setCartCount(orders.length));
     }
 
     let orderString = JSON.stringify(orders);

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { postOrder } from "../api";
 import { getUserData } from "../utils";
+import { useDispatch } from "react-redux";
+import { setCartCount } from "../stores/cartSlice";
 
 const Cart = () => {
   const { id } = getUserData();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   let retString = localStorage.getItem(`orders_${id}`);
@@ -50,6 +53,7 @@ const Cart = () => {
     if (confirmDelete) {
       // Filter out the item to be deleted
       const updatedOrders = orders.filter((_, i) => i !== index);
+      dispatch(setCartCount(updatedOrders.length));
       setOrders(updatedOrders); // Update state
       localStorage.setItem(`orders_${id}`, JSON.stringify(updatedOrders)); // Update localStorage
       window.dispatchEvent(new Event("cartUpdated"));
